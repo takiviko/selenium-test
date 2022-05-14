@@ -12,4 +12,4 @@ Feature: Add items to cart
         | 0              | 0             |
         | 1              | 1             |
         | 2              | 2             |
-        | 10             | 10            |
+        | 5              | 5             |

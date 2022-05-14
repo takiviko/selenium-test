@@ -9,9 +9,8 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.awaitility.Awaitility;
-import org.junit.jupiter.api.AfterEach;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -19,8 +18,13 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class HomePageStepDefinitions {
 
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration SMALL_TIMEOUT = Duration.ofSeconds(1);
+
     ChromeDriver webDriver = new ChromeDriver();
     HomePage homePage = new HomePage(webDriver);
+
+    private final WebDriverWait wait = new WebDriverWait(webDriver, DEFAULT_TIMEOUT);
 
     static {
         WebDriverManager.chromedriver().setup();
@@ -57,7 +61,6 @@ public class HomePageStepDefinitions {
 
         for (int i = 0; i < numberOfClicks; i++) {
             addToCartButton.click();
-            Awaitility.waitAtMost(Duration.ofMillis(200)); //For consistency, sometimes the tests would fail if this is not here
         }
     }
 
@@ -76,10 +79,46 @@ public class HomePageStepDefinitions {
         int expected = Integer.parseInt(numberOfItemsString);
         int actual = Integer.parseInt(actualNumberOfItems);
 
+        webDriver.close();
+
         if (!(expected == actual)) {
             fail();
         }
+    }
+
+    @When("the same item is added to the wishlist {string} times")
+    public void theSameItemIsAddedToTheWishlistNumberOfClicksTimes(String numberOfClicksString) {
+        WebElement addToWishListButton = webDriver
+            .findElement(By.cssSelector("#content > div.row > div:nth-child(1) > div > div.button-group > button:nth-child(2)"));
+
+        int numberOfClicks = Integer.parseInt(numberOfClicksString);
+
+        for (int i = 0; i < numberOfClicks; i++) {
+            addToWishListButton.click();
+        }
+    }
+
+    @Then("I have {string} items in my wishlist")
+    public void iHaveNumberOfItemsItemsInMyWishlist(String numberOfItemsString) {
+
+        webDriver.manage().window().setPosition(new Point(0, 0));
+        webDriver.manage().window().maximize();
+
+        String expected = "Wish List (" + Integer.parseInt(numberOfItemsString) + ")";
+
+        wait.withTimeout(SMALL_TIMEOUT).until(ExpectedConditions.textToBePresentInElement(
+            webDriver.findElement(
+                By.cssSelector("#wishlist-total > span")),
+            expected));
+        WebElement wishListButton = webDriver.findElement(By.cssSelector("#wishlist-total > span"));
+
+        String actual = wishListButton.getText();
 
         webDriver.close();
+
+        if (!(expected.equals(actual))) {
+            fail();
+        }
+
     }
 }

@@ -2,6 +2,8 @@ package homepage;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -170,6 +172,71 @@ public class HomePageStepDefinitions {
         var cartButton = webDriver.findElement(By.cssSelector("#cart-total"));
 
         if (!cartButton.getText().contains(currencyType)) {
+            fail();
+        }
+
+        webDriver.close();
+    }
+
+    @When("the about us button is clicked")
+    public void theAboutUsButtonIsClicked() {
+        var aboutUsButton = webDriver.findElement(By.cssSelector("body > footer > div > div > div:nth-child(1) > ul > li:nth-child(1) > a"));
+
+        aboutUsButton.click();
+    }
+
+    @Then("the about us page is opened")
+    public void theAboutUsPageIsOpened() {
+        String currentUrl = webDriver.getCurrentUrl();
+
+        if (!currentUrl.equals("http://tutorialsninja.com/demo/index.php?route=information/information&information_id=4")) {
+            fail();
+        }
+
+        webDriver.close();
+    }
+
+    @When("the delivery information button is clicked")
+    public void theDeliveryInformationButtonIsClicked() {
+        var aboutUsButton = webDriver.findElement(By.cssSelector("body > footer > div > div > div:nth-child(1) > ul > li:nth-child(2) > a"));
+
+        aboutUsButton.click();
+    }
+
+    @Then("the delivery information page is opened")
+    public void theDeliveryInformationPageIsOpened() {
+        String currentUrl = webDriver.getCurrentUrl();
+
+        if (!currentUrl.equals("http://tutorialsninja.com/demo/index.php?route=information/information&information_id=6")) {
+            fail();
+        }
+
+        webDriver.close();
+    }
+
+    @When("the user enters {string} into the search bar")
+    public void theUserEntersTextIntoTheSearchBar(String text) {
+        var searchBar = webDriver.findElement(By.cssSelector("#search > input"));
+        searchBar.sendKeys(text);
+    }
+
+    @And("The user clicks the search button")
+    public void theUserClicksTheSearchButton() {
+        var searchButton = webDriver.findElement(By.cssSelector("#search > span > button"));
+        searchButton.click();
+    }
+
+    @Then("the user gets taken to the search page with {string} as the search parameter")
+    public void theUserGetsTakenToTheSearchPageWithTextAsTheSearchParameter(String text) {
+        String currentUrl = webDriver.getCurrentUrl();
+
+        String queryParam = "&search=";
+        text = URLEncoder.encode(text, StandardCharsets.UTF_8);
+        if (text.equals("")) {
+            queryParam = "";
+        }
+
+        if (!currentUrl.equals("http://tutorialsninja.com/demo/index.php?route=product/search"+ queryParam + text)) {
             fail();
         }
 

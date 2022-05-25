@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.Duration;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -120,5 +122,57 @@ public class HomePageStepDefinitions {
             fail();
         }
 
+    }
+
+    @And("the currency dropdown is clicked")
+    public void theCurrencyDropdownIsClicked() {
+        var currencySelectorButton = webDriver.findElement(By.cssSelector("#form-currency > div > button"));
+        currencySelectorButton.click();
+    }
+
+    @When("the {string} currency option is selected")
+    public void theCurrencyTypeCurrencyOptionIsSelected(String currencyType) {
+        var selectionsContainingSymbol = webDriver.findElements(By.cssSelector("#form-currency > div > ul > li > button"))
+            .stream()
+            .filter(selection -> selection.getText().contains(currencyType))
+            .collect(Collectors.toList());
+
+        if (selectionsContainingSymbol.size() > 1) {
+            fail();
+            throw new RuntimeException("More than one items found in the list containing the character " + currencyType);
+        }
+
+        selectionsContainingSymbol.stream()
+            .findFirst().orElseThrow(() -> new RuntimeException("No item found in the list containing the character " + currencyType))
+            .click();
+    }
+
+    @Then("the currency type switches to {string}")
+    public void theCurrencyTypeSwitchesToCurrencyType(String currencyType) {
+        var currencySelectorButton = webDriver.findElement(By.cssSelector("#form-currency > div > button"));
+
+        if (!currencySelectorButton.getText().contains(currencyType)) {
+            fail();
+        }
+    }
+
+    @And("prices are displayed in {string}")
+    public void pricesAreDisplayedInCurrencyType(String currencyType) {
+        var itemPrice = webDriver.findElement(By.cssSelector("#content > div.row > div:nth-child(1) > div > div.caption > p.price"));
+
+        if (!itemPrice.getText().contains(currencyType)) {
+            fail();
+        }
+    }
+
+    @And("the cart has its currency set to {string}")
+    public void theCartHasItsCurrencySetToCurrencyType(String currencyType) {
+        var cartButton = webDriver.findElement(By.cssSelector("#cart-total"));
+
+        if (!cartButton.getText().contains(currencyType)) {
+            fail();
+        }
+
+        webDriver.close();
     }
 }
